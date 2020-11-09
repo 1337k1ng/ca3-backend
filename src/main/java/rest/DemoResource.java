@@ -1,8 +1,13 @@
 package rest;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import entities.User;
+import facades.FacadeExample;
+import facades.RemoteServerFacade;
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -23,6 +28,10 @@ import utils.EMF_Creator;
 public class DemoResource {
     
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory();
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final FacadeExample FACADE =  FacadeExample.getFacadeExample(EMF);
+   private static final RemoteServerFacade remoteFACADE =  RemoteServerFacade.getRemoteServerFacade(EMF);
+    
     @Context
     private UriInfo context;
 
@@ -67,5 +76,26 @@ public class DemoResource {
     public String getFromAdmin() {
         String thisuser = securityContext.getUserPrincipal().getName();
         return "{\"msg\": \"Hello to (admin) User: " + thisuser + "\"}";
+    }
+    
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("filmsparallel")
+    public String getFromServersParallel() throws IOException, InterruptedException, ExecutionException {
+        long start = System.nanoTime();
+        remoteFACADE.getAllFilmsParallel();
+        long end = System.nanoTime();
+        return "{\"ms\": \" "+ (end - start) + "\"}";
+    }
+    
+     @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("films")
+    public String getFromServers() throws IOException {
+         long start = System.nanoTime();
+        remoteFACADE.getAllFilms();
+        long end = System.nanoTime();
+        return "{\"ms\": \" "+ (end - start) + "\"}";
     }
 }

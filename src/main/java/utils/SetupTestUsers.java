@@ -3,26 +3,33 @@ package utils;
 
 import entities.Role;
 import entities.User;
+import facades.RemoteServerFacade;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 public class SetupTestUsers {
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
 
     EntityManagerFactory emf = EMF_Creator.createEntityManagerFactory();
     EntityManager em = emf.createEntityManager();
     
+    RemoteServerFacade fc = RemoteServerFacade.getRemoteServerFacade(emf);
+   
+    fc.getAllFilms();
+    fc.getAllFilmsParallel();
     // IMPORTAAAAAAAAAANT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // This breaks one of the MOST fundamental security rules in that it ships with default users and passwords
     // CHANGE the three passwords below, before you uncomment and execute the code below
     // Also, either delete this file, when users are created or rename and add to .gitignore
     // Whatever you do DO NOT COMMIT and PUSH with the real passwords
-
-    User user = new User("user", "test");
-    User admin = new User("admin", "test");
-    User both = new User("user_admin", "test");
+/*
+    User user = new User("user", "test1");
+    User admin = new User("admin", "test1");
+    User both = new User("user_admin", "test1");
 
     if(admin.getUserPass().equals("test")||user.getUserPass().equals("test")||both.getUserPass().equals("test"))
       throw new UnsupportedOperationException("You have not changed the passwords");
@@ -44,7 +51,7 @@ public class SetupTestUsers {
     System.out.println("Testing user with OK password: " + user.verifyPassword("test"));
     System.out.println("Testing user with wrong password: " + user.verifyPassword("test1"));
     System.out.println("Created TEST Users");
-   
+   */
   }
 
 }
