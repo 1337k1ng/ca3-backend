@@ -18,8 +18,8 @@ public class filmDTO {
     String title;
     String episode_id;
     String opening_crawl;
-    List<String> characters = new ArrayList();
-    List<String> planets = new ArrayList();
+    List<String> characters = new ArrayList(); // Liste af urls til hver person
+    List<String> planets = new ArrayList(); // Liste af urls til hver planet
     String release_date;
 
     public filmDTO(String title, String episode_id, String opening_crawl, String release_date) {
@@ -53,7 +53,7 @@ public class filmDTO {
         this.opening_crawl = opening_crawl;
     }
 
-    public List<String> getCharacters() {
+    public List<String> getCharacterUrls() {
         return characters;
     }
 
@@ -61,7 +61,7 @@ public class filmDTO {
         this.characters = characters;
     }
 
-    public List<String> getPlanets() {
+    public List<String> getPlanetUrls() {
         return planets;
     }
 
@@ -76,6 +76,7 @@ public class filmDTO {
     public void setRelease_date(String release_date) {
         this.release_date = release_date;
     }
+    
     
     
 }

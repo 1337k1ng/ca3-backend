@@ -2,6 +2,9 @@ package facades;
 
 import utils.EMF_Creator;
 import entities.RenameMe;
+import errorhandling.API_Exception;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.AfterAll;
@@ -17,6 +20,7 @@ public class FacadeExampleTest {
 
     private static EntityManagerFactory emf;
     private static FacadeExample facade;
+    private static RemoteServerFacade remoteFacade;
 
     public FacadeExampleTest() {
     }
@@ -25,6 +29,7 @@ public class FacadeExampleTest {
     public static void setUpClass() {
        emf = EMF_Creator.createEntityManagerFactoryForTest();
        facade = FacadeExample.getFacadeExample(emf);
+       remoteFacade = RemoteServerFacade.getRemoteServerFacade(emf);
     }
 
     @AfterAll
@@ -58,6 +63,15 @@ public class FacadeExampleTest {
     @Test
     public void testAFacadeMethod() {
         assertEquals(2, facade.getRenameMeCount(), "Expects two rows in the database");
+    }
+    
+    
+    @Test
+    public void testGetAllFilms() throws IOException, InterruptedException, ExecutionException, API_Exception {
+            
+          String films = remoteFacade.getAllFilmsParallel();
+           
+        assertEquals(true, films.contains("A New Hope"), "Expects to have the movie title A New Hope");
     }
 
 }

@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 public class RenameMeResourceTest {
 
     private static final int SERVER_PORT = 7777;
-    private static final String SERVER_URL = "http://localhost/api";
+    private static final String SERVER_URL = "http://localhost/jpareststarter/api";
     private static RenameMe r1, r2;
 
     static final URI BASE_URI = UriBuilder.fromUri(SERVER_URL).port(SERVER_PORT).build();
@@ -78,9 +78,8 @@ public class RenameMeResourceTest {
     }
 
     @Test
-    @Disabled
     public void testServerIsUp() {
-        given().when().get("/xxx").then().statusCode(200);
+        given().when().get("/info").then().statusCode(200);
     }
 
     //This test assumes the database contains two rows
@@ -104,5 +103,15 @@ public class RenameMeResourceTest {
                 .assertThat()
                 .statusCode(HttpStatus.OK_200.getStatusCode())
                 .body("count", equalTo(2));
+    }
+    
+     @Test
+    public void testFilms() throws Exception {
+        given()
+                .contentType("application/json")
+                .get("/info/filmsparallel").then()
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .body("title", equalTo("A New Hope"));
     }
 }

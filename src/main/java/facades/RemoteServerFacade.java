@@ -11,6 +11,7 @@ import dto.characterDTO;
 import dto.filmDTO;
 import dto.combinedDTO;
 import dto.planetDTO;
+import errorhandling.API_Exception;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,12 +30,11 @@ import utils.HttpUtils;
 public class RemoteServerFacade {
     
       private static EntityManagerFactory emf;
-    private static RemoteServerFacade instance;
-        private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+      private static RemoteServerFacade instance;
+      private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     
-    
-    
+   
     public RemoteServerFacade(){}
       /**
      *
@@ -50,9 +50,10 @@ public class RemoteServerFacade {
     }
     
     
-    public String getAllFilms() throws IOException{
+    
+    // Sequntial metode til at hente film
+    public String getAllFilms() throws IOException, API_Exception{
         
-        long start = System.nanoTime();
         String filmsJson = HttpUtils.fetchData("https://swapi.dev/api/films/1/");
 
         filmDTO filmsdto = GSON.fromJson(filmsJson, filmDTO.class);
@@ -60,97 +61,93 @@ public class RemoteServerFacade {
          List<characterDTO> allCharacter = new ArrayList(); 
          List<planetDTO> allPlanets = new ArrayList(); 
          
-        for (String ch : filmsdto.getCharacters()){
+        for (String ch : filmsdto.getCharacterUrls()){
            String ch2 = ch.replace("http", "https");
             String data = HttpUtils.fetchData(ch2);
-        characterDTO c = GSON.fromJson(data, characterDTO.class);
+             characterDTO c = GSON.fromJson(data, characterDTO.class);
            allCharacter.add(c);
         }
         
-         for (String planet : filmsdto.getPlanets()){
+         for (String planet : filmsdto.getPlanetUrls()){
            String planet2 = planet.replace("http", "https");
             String data = HttpUtils.fetchData(planet2);
-        planetDTO p = GSON.fromJson(data, planetDTO.class);
+             planetDTO p = GSON.fromJson(data, planetDTO.class);
            allPlanets.add(p);
         }
-      
+         
+       if (allCharacter.isEmpty() || allPlanets.isEmpty()) {
+             throw new API_Exception("Internal failure, service is down.", 400);
+         }
+       
          combinedDTO combined = new combinedDTO(filmsdto, allCharacter, allPlanets);
-          long end = System.nanoTime();
-          System.out.println((end - start));
+         
         return GSON.toJson(combined);
     }
     
     
-     public String getAllFilmsParallel() throws IOException, InterruptedException, ExecutionException{
+     public String getAllFilmsParallel() throws IOException, InterruptedException, ExecutionException, API_Exception{
          
         ExecutorService executor = Executors.newCachedThreadPool();
-        List<Future<String>> planetFutures = new ArrayList<>();
-        List<Future<String>> characterFutures = new ArrayList<>();
-        long start = System.nanoTime();
+ 
         String filmsJson = HttpUtils.fetchData("https://swapi.dev/api/films/1/");
 
         filmDTO filmsdto = GSON.fromJson(filmsJson, filmDTO.class);
         
-         List<characterDTO> allCharacter = new ArrayList();
-         List<planetDTO> planets = new ArrayList<>();
+         List<characterDTO> allCharacter = giveThreadsWorkGetCharacters(filmsdto.getCharacterUrls(), executor);
+         List<planetDTO> allPlanets = giveThreadsWorkGetPlanets(filmsdto.getPlanetUrls(), executor);
+        
          
-        for (String url : filmsdto.getPlanets()){
+         if (allCharacter.isEmpty() || allPlanets.isEmpty()) {
+             throw new API_Exception("Internal failure, service is down.", 400);
+         }
+         
+         combinedDTO combined = new combinedDTO(filmsdto, allCharacter, allPlanets);
+        
+        return GSON.toJson(combined);
+    }
+   
+     
+    /*
+     * Denne metode anvender en executor og futures, til at tildele threads opgaver.
+     * Tager argumenterne: urls som er en liste af alle de urls man vil hente data fra.
+     * og et ExecutorService til at håndtere trådene.
+     */
+     private List<planetDTO> giveThreadsWorkGetPlanets(List<String> urls, ExecutorService executor) throws InterruptedException, ExecutionException {
+         
+          List<Future<String>> planetFutures = new ArrayList<>();
+          List<planetDTO> allPlanets = new ArrayList<>();
+          
+          for (String url : urls){
             Future future = executor.submit(new PlanetHandler(url));
             planetFutures.add(future);
         }
-        
-         for (String url : filmsdto.getCharacters()){
+             for (Future f : planetFutures){
+                 allPlanets.add((planetDTO) f.get());        
+         }
+         
+         return allPlanets;    
+     }
+     
+     
+     
+    /*
+     * Denne metode anvender en executor og futures, til at tildele threads opgaver.
+     * Tager argumenterne: urls som er en liste af alle de urls man vil hente data fra.
+     * og et ExecutorService til at håndtere trådene.
+     */
+    private List<characterDTO> giveThreadsWorkGetCharacters(List<String> urls, ExecutorService executor) throws InterruptedException, ExecutionException {
+         
+          List<Future<String>> characterFutures = new ArrayList<>();
+          List<characterDTO> allCharacters = new ArrayList<>();
+          
+          for (String url : urls){
             Future future = executor.submit(new CharacterHandler(url));
             characterFutures.add(future);
         }
+             for (Future f : characterFutures){
+                 allCharacters.add((characterDTO) f.get());        
+         }
          
-         for (Future f : characterFutures){
-                 allCharacter.add((characterDTO) f.get());
-         }
-           for (Future f : planetFutures){
-                 planets.add((planetDTO) f.get());        
-         }
-       
-      
-         combinedDTO combined = new combinedDTO(filmsdto, allCharacter, planets);
-         long end = System.nanoTime();
-          System.out.println("Parallel: " + (end - start) );
-        return GSON.toJson(combined);
-    }
-    
-    public class PlanetHandler implements Callable<planetDTO>{
-
-        String planetUrl;
-        public PlanetHandler(String planetUrl){
-            this.planetUrl = planetUrl.replace("http", "https");
-        }
-        
-        @Override
-        public planetDTO call() throws Exception {
-     
-            String data = HttpUtils.fetchData(planetUrl);
-            planetDTO planetdto = GSON.fromJson(data, planetDTO.class);
-                
-            return planetdto;
-        }
-        
-    }
-    
-     public class CharacterHandler implements Callable<characterDTO>{
-
-        String characteUrl;
-        public CharacterHandler(String characteUrl){
-            this.characteUrl = characteUrl.replace("http", "https");
-        }
-        
-        @Override
-        public characterDTO call() throws Exception {
-     
-            String data = HttpUtils.fetchData(characteUrl);
-            characterDTO charactedto = GSON.fromJson(data, characterDTO.class);
-                
-            return charactedto;
-        }
-        
-    }
+         return allCharacters;    
+     }
 }

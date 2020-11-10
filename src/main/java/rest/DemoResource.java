@@ -3,6 +3,7 @@ package rest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import entities.User;
+import errorhandling.API_Exception;
 import facades.FacadeExample;
 import facades.RemoteServerFacade;
 import java.io.IOException;
@@ -79,23 +80,20 @@ public class DemoResource {
     }
     
     
+    
+    /** OBS Nedestående endpoints er til for at vise hvordan man kan hente fra andre servere OBS  **/
+    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("filmsparallel")
-    public String getFromServersParallel() throws IOException, InterruptedException, ExecutionException {
-        long start = System.nanoTime();
-        remoteFACADE.getAllFilmsParallel();
-        long end = System.nanoTime();
-        return "{\"ms\": \" "+ (end - start) + "\"}";
+    public String getFromServersParallel() throws IOException, InterruptedException, ExecutionException, API_Exception {
+        return remoteFACADE.getAllFilmsParallel();
     }
     
      @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("films")
     public String getFromServers() throws IOException {
-         long start = System.nanoTime();
-        remoteFACADE.getAllFilms();
-        long end = System.nanoTime();
-        return "{\"ms\": \" "+ (end - start) + "\"}";
+        return remoteFACADE.getAllFilms();
     }
 }
