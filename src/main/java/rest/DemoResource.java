@@ -93,7 +93,7 @@ public class DemoResource {
      @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("films")
-    public String getFromServers() throws IOException {
+    public String getFromServers() throws IOException, API_Exception {
         return remoteFACADE.getAllFilms();
     }
 }
