@@ -96,7 +96,7 @@ public class DemoResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("films")
     public String getFromServers() throws IOException, API_Exception {
-         System.out.println(remoteFACADE.getAllFilms());
+
         return remoteFACADE.getAllFilms();
     }
 }
