@@ -16,7 +16,7 @@ Projektet har følgende fungerende endpoints til at starte med:
 - "api/info/admin": Kan kun vises hvis man er logget ind med rollen admin
 - "api/info/filmsparallel": Kan kun vises hvis man er logget ind med rollen admin eller user. Henter data fra anden server og retunere det som JSON.
 <br>
-For at hente data fra endpoint liggende på andre servere, bruges classen HttpUtils. 
+For at hente data fra endpoint liggende på andre servere, bruges klassen HttpUtils. Og hvis du skal bruge threads, kan du meget belejligt ligge din callable klasse i filen CallableHandling under facade package. 
 
 
 # Getting Started
