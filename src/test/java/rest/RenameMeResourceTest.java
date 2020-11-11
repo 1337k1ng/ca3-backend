@@ -4,6 +4,7 @@ import entities.RenameMe;
 import utils.EMF_Creator;
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
+import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
 import java.net.URI;
 import javax.persistence.EntityManager;
@@ -77,6 +78,24 @@ public class RenameMeResourceTest {
         }
     }
 
+    
+        //This is how we hold on to the token after login, similar to that a client must store the token somewhere
+    private static String securityToken;
+
+    //Utility method to login and set the returned securityToken
+    private static void login(String role, String password) {
+        String json = String.format("{username: \"%s\", password: \"%s\"}", role, password);
+        securityToken = given()
+                .contentType("application/json")
+                .body(json)
+                //.when().post("/api/login")
+                .when().post("/login")
+                .then()
+                .extract().path("token");
+        //System.out.println("TOKEN ---> " + securityToken);
+    }
+    
+    
     @Test
     public void testServerIsUp() {
         given().when().get("/info").then().statusCode(200);
@@ -106,9 +125,13 @@ public class RenameMeResourceTest {
     }
     
      @Test
-    public void testFilms() throws Exception {
+    public void testFilms() throws Exception {  
+            login("admin", "test");
         given()
                 .contentType("application/json")
+                .accept(ContentType.JSON)
+                .header("x-access-token", securityToken)
+                .when()                
                 .get("/info/filmsparallel").then()
                 .assertThat()
                 .statusCode(HttpStatus.OK_200.getStatusCode())
