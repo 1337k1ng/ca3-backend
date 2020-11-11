@@ -1,6 +1,8 @@
 package rest;
 
 import entities.RenameMe;
+import entities.Role;
+import entities.User;
 import utils.EMF_Creator;
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
@@ -73,6 +75,27 @@ public class RenameMeResourceTest {
             em.persist(r1);
             em.persist(r2);
             em.getTransaction().commit();
+              em.getTransaction().begin();
+            //Delete existing users and roles to get a "fresh" database
+            em.createQuery("delete from User").executeUpdate();
+            em.createQuery("delete from Role").executeUpdate();
+
+            Role userRole = new Role("user");
+            Role adminRole = new Role("admin");
+            User user = new User("user", "test");
+            user.addRole(userRole);
+            User admin = new User("admin", "test");
+            admin.addRole(adminRole);
+            User both = new User("user_admin", "test");
+            both.addRole(userRole);
+            both.addRole(adminRole);
+            em.persist(userRole);
+            em.persist(adminRole);
+            em.persist(user);
+            em.persist(admin);
+            em.persist(both);
+            //System.out.println("Saved test data to database");
+            em.getTransaction().commit();
         } finally {
             em.close();
         }
@@ -126,7 +149,7 @@ public class RenameMeResourceTest {
     
      @Test
     public void testFilms() throws Exception {  
-            login("admin", "test");
+              login("user_admin", "test");
         given()
                 .contentType("application/json")
                 .accept(ContentType.JSON)
