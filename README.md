@@ -2,7 +2,15 @@
 
 ## CA3 - How to use
 ### Preconditions
-*In order to use this code, you should have a local developer setup + a "matching" droplet on Digital Ocean as described in the 3. semester guidelines* 
+*In order to use this code, you should have a local developer setup + a "matching" droplet on Digital Ocean as described in the 3. semester guidelines.* 
+
+### Dette skal ændres
+Inden du begynder skal du oprette en ny database (med tilhørende test database) og ændre Persistence unit'en til at pege derhen. Derefter skal du ændre "remote.server" i pom filen til dit eget domænenavn med manager/text efterfulgt. <br>
+I travis.yml filen, skal du ændre "CREATE DATABASE" til at oprette en med samme navn, som det du kaldte din lokale test database. <br>
+Inde på din egen server skal du ændre i docker-compose.yml filen. Her kan du endte tilføje en ny "CONNECTION_STR" (fx kalde den "CONNECTION_STR2") eller bare ændre dens værdi til "jdbc:mysql://db:3306/XXX", hvor XXX er det navn du gav din lokale database. Hopper du så ind i projetet under utils ligger der en EMF_creator, som du skal gå ind i og ændre der hvor der står "System.getenv("CONNECTION_STR3")", til det du har kaldt din CONNECTION_STR på din egen server.
+
+
+
 # Getting Started
 
 This document explains how to use this code (build, test and deploy), locally with maven, and remotely with maven controlled by Travis
