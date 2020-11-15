@@ -81,7 +81,7 @@ public class DemoResource {
     
     
     
-    /** OBS Nedeståendesss endpoints er til for at vise hvordan man kan hente fra andre servere OBS  **/
+    /** OBS Nedeståendes endpoints er til for at vise hvordan man kan hente fra andre servere OBS  **/
     
     @GET
     @RolesAllowed({"admin","user"})
