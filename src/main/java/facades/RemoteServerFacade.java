@@ -8,6 +8,7 @@ package facades;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dto.characterDTO;
+import dto.chuckNorrisDTO;
 import dto.filmDTO;
 import dto.combinedDTO;
 import dto.planetDTO;
@@ -82,6 +83,28 @@ public class RemoteServerFacade {
          combinedDTO combined = new combinedDTO(filmsdto, allCharacter, allPlanets);
          
         return GSON.toJson(combined);
+    }
+    
+    
+    public String getRandomChuckJoke() throws IOException, InterruptedException, ExecutionException, API_Exception {
+        
+      // fetcher en chuck joke i JSON og gemmer det i en String
+        String chuckJokeJson = HttpUtils.fetchData("https://api.chucknorris.io/jokes/random");
+        
+      // Laver et chuckDTO object ud af min json streng, og laver det om til GSON
+        chuckNorrisDTO chuckDTO = GSON.fromJson(chuckJokeJson, chuckNorrisDTO.class); 
+       
+       
+        
+        
+        
+        if (chuckDTO == null){
+            throw new API_Exception("Internal failure, service is down.", 400);
+        }
+        
+         
+        
+        return GSON.toJson(chuckDTO);
     }
     
     

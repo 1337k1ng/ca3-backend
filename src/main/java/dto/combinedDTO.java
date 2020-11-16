@@ -20,9 +20,10 @@ public class combinedDTO {
     String episode_id;
     String opening_crawl;
     String release_date;
+  
     
     public combinedDTO(filmDTO film, List<characterDTO> ch, List<planetDTO> planet){
-       
+   
         this.planetInfo = planet;
         this.characterInfo = ch;
         this.title = film.getTitle();

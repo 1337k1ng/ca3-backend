@@ -2,6 +2,7 @@ package rest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import dto.chuckNorrisDTO;
 import entities.User;
 import errorhandling.API_Exception;
 import facades.FacadeExample;
@@ -21,18 +22,19 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import utils.EMF_Creator;
+import utils.HttpUtils;
 
 /**
  * @author lam@cphbusiness.dk
  */
 @Path("info")
 public class DemoResource {
-    
+
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final FacadeExample FACADE =  FacadeExample.getFacadeExample(EMF);
-   private static final RemoteServerFacade remoteFACADE =  RemoteServerFacade.getRemoteServerFacade(EMF);
-    
+    private static final FacadeExample FACADE = FacadeExample.getFacadeExample(EMF);
+    private static final RemoteServerFacade remoteFACADE = RemoteServerFacade.getRemoteServerFacade(EMF);
+
     @Context
     private UriInfo context;
 
@@ -53,7 +55,7 @@ public class DemoResource {
 
         EntityManager em = EMF.createEntityManager();
         try {
-            TypedQuery<User> query = em.createQuery ("select u from User u",entities.User.class);
+            TypedQuery<User> query = em.createQuery("select u from User u", entities.User.class);
             List<User> users = query.getResultList();
             return "[" + users.size() + "]";
         } finally {
@@ -78,25 +80,42 @@ public class DemoResource {
         String thisuser = securityContext.getUserPrincipal().getName();
         return "{\"msg\": \"Hello to (admin) User: " + thisuser + "\"}";
     }
-    
-    
-    
-    /** OBS Nedeståendesss endpoints er til for at vise hvordan man kan hente fra andre servere OBS  **/
-    
+
+    /**
+     * OBS Nedeståendesss endpoints er til for at vise hvordan man kan hente fra
+     * andre servere OBS  *
+     */
     @GET
-    @RolesAllowed({"admin","user"})
+    @RolesAllowed({"admin", "user"})
     @Produces(MediaType.APPLICATION_JSON)
     @Path("filmsparallel")
     public String getFromServersParallel() throws IOException, InterruptedException, ExecutionException, API_Exception {
         return remoteFACADE.getAllFilmsParallel();
     }
-    
-     @GET
-     @RolesAllowed({"admin","user"})
+
+    @GET
+    @RolesAllowed({"admin", "user"})
     @Produces(MediaType.APPLICATION_JSON)
     @Path("films")
     public String getFromServers() throws IOException, API_Exception {
 
         return remoteFACADE.getAllFilms();
     }
+
+    @GET
+    //@RolesAllowed({"admin", "user"})
+    @Path("chuckjoke")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getJokeFromServersChuck() throws IOException, API_Exception, InterruptedException, ExecutionException {
+        
+        
+        String chuckJoke = HttpUtils.fetchData("https://api.chucknorris.io/jokes/random");
+        chuckNorrisDTO chuckDTO = GSON.fromJson(chuckJoke, chuckNorrisDTO.class);
+        
+       
+        return GSON.toJson(chuckDTO); 
+    }
 }
+
+
+
